@@ -75,12 +75,10 @@
     git
     thunderbird
     linuxKernel.kernels.linux_hardened
-    timeshift
     linux-firmware
     # Security packages
+    timeshift
     clamav
-    ossec-hids
-    rkhunter
     lynis
   ];
 
@@ -117,8 +115,7 @@
     wantedBy = [ "multi-user.target" ];
   };
 
-  # Add the service to the `wants` list for `multi-user.target`
-  systemd.targets["multi-user.target"].wantedBy = ["update_clam"];
+  systemd.targets["multi-user.target"].wantedBy = ["update_clamav_database"];
 
   # Define a systemd service to run ClamAV scan
   systemd.services.clamav-scan = {
