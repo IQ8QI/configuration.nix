@@ -36,7 +36,7 @@
   # Set GRUB as the bootloader
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
-  boot.loader.grub.device = "/dev/sda"; # Replace 'sdX' with your actual disk device
+  boot.loader.grub.device = "/dev/sda";
 
   # Set system language and fonts to Polish
   i18n = {
@@ -77,6 +77,7 @@
     thunderbird
     linuxKernel.kernels.linux_hardened
     timeshift
+    linux-firmware
   ];
 
   # Set GNOME as the default desktop environment
