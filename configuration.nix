@@ -53,7 +53,6 @@
     description = "Bartłomiej Konecki";
     hashedPassword = ""; # Leave this empty to require a password to be set upon first login
     initialPassword = "";
-    openssh.authorizedKeys.keys = [ ]; # If you want to set SSH keys, add them here
     extraGroups = [ "wheel" ]; # Add the user to the "wheel" group for sudo privileges
   };
   users.users.root = {
@@ -78,6 +77,11 @@
     linuxKernel.kernels.linux_hardened
     timeshift
     linux-firmware
+    # Security packages
+    clamav
+    ossec-hids
+    rkhunter
+    lynis
   ];
 
   # Set GNOME as the default desktop environment
@@ -89,7 +93,7 @@
 
   # Enable and configure UFW
   networking.firewall.enable = true;
-  networking.firewall.allowedTCPPorts = [ 22 ]; # Add other allowed ports as needed
+  networking.firewall.allowedTCPPorts = [];
 
   # Password policy
   security.pam.services."common-password".enable = true;
@@ -103,12 +107,31 @@
     rules = [];
   };
 
-  # SSH Hardening for user "bkonecki"
-  services.openssh.permitRootLogin = "no";
-  services.openssh.passwordAuthentication = false;
-  services.openssh.extraConfig = ''
-    AllowUsers bkonecki
-    PermitRootLogin no
-    PasswordAuthentication yes
-  '';
+  # Disable ssh
+  services.openssh.enable = false;
+
+  # Define a systemd service to update clamav database at evey startup
+  systemd.services.update_clamav_database = {
+    description = "Update clamav database at boot";
+    serviceConfig.ExecStart = "freshclam";
+    wantedBy = [ "multi-user.target" ];
+  };
+
+  # Add the service to the `wants` list for `multi-user.target`
+  systemd.targets["multi-user.target"].wantedBy = ["update_clam"];
+
+  # Define a systemd service to run ClamAV scan
+  systemd.services.clamav-scan = {
+    description = "Run ClamAV scan of / directory";
+    serviceConfig.ExecStart = "${pkgs.clamav}/bin/clamscan -r /";
+    wantedBy = [ "multi-user.target" ];
+  };
+
+  # Define a systemd timer to schedule the service
+  systemd.timers.clamav-scan = {
+    description = "Schedule ClamAV scan every 4th day";
+    timerConfig.OnCalendar = "*-*-* 0:00:00";  # Set the specific time (midnight)
+    timerConfig.OnUnitActiveSec = "4d";         # Run every 4 days
+  };
+
 }
