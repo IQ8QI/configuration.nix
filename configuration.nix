@@ -1,10 +1,42 @@
 { config, pkgs, ... }:
 
 {
+# Partitioning
+  fileSystems."/boot" = {
+    device = "/dev/sda1";
+    fsType = "vfat";
+    size = "1G";
+  };
+  fileSystems."/" = {
+    device = "/dev/sda2";
+    fsType = "btrfs";
+    size = "60G";
+  };
+  fileSystems."swap" = {
+    device = "/dev/sda3";
+    fsType = "swap";
+    size = "8G";
+  };
+  fileSystems."/home" = {
+    device = "/dev/sda4";
+    fsType = "btrfs";
+  };
+
+  # Timeshift configuration for /home
+  services.timeshift = {
+    enable = true;
+    btrfsSubvolume = "/home";
+    numDailySnapshots = 7;
+    numWeeklySnapshots = 3;
+    numMonthlySnapshots = 3;
+    snapshotSize = "2G";
+    snapshotDevice = "/dev/sda4";
+  };
+
   # Set GRUB as the bootloader
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
-  boot.loader.grub.device = "/dev/sdX"; # Replace 'sdX' with your actual disk device
+  boot.loader.grub.device = "/dev/sda"; # Replace 'sdX' with your actual disk device
 
   # Set system language and fonts to Polish
   i18n = {
@@ -44,6 +76,7 @@
     git
     thunderbird
     linuxKernel.kernels.linux_hardened
+    timeshift
   ];
 
   # Set GNOME as the default desktop environment
