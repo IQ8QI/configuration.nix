@@ -70,7 +70,6 @@
     ufw
     librewolf
     firefox
-    steam
     vim
     git
     thunderbird
@@ -83,7 +82,12 @@
   ];
 
   # Set GNOME as the default desktop environment
-  services.xserver.desktopManager.gnome.enable = true;
+  services.xserver = {
+    enable = true;
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
+    displayManager.defaultSession = "gnome";
+  };
 
   # Hardening options
   # Enable automatic updates at every computer shutdown
